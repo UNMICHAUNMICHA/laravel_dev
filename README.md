@@ -1,66 +1,196 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+apt install composer
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
+1. ติดตั้ง Docker และ Docker Compose
+ถ้ายังไม่ได้ติดตั้ง Docker ให้ทำตามคำแนะนำนี้ก่อน:
+🔗 ติดตั้ง Docker บน Ubuntu
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+2. สร้างโปรเจกต์ Laravel
+คุณสามารถใช้ Laravel ใหม่หรือใช้โปรเจกต์ที่มีอยู่แล้ว
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+ถ้ายังไม่มี Laravel ให้รัน:
+composer create-project --prefer-dist laravel/laravel my-laravel-app
+cd my-laravel-app
+หากยังไม่มี Composer ให้ติดตั้งก่อน:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Laravel Sponsors
+sudo apt install composer -y
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### Premium Partners
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+3. สร้างไฟล์ docker-compose.yml
+สร้างไฟล์ docker-compose.yml ที่ root ของโปรเจกต์:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
+version: '3.8'
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+services:
+  app:
+    image: php:8.2-fpm
+    container_name: laravel_app
+    restart: always
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    networks:
+      - laravel
 
-## License
+  web:
+    image: nginx:alpine
+    container_name: laravel_nginx
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - laravel
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+  db:
+    image: mysql:8.0
+    container_name: laravel_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    networks:
+      - laravel
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8080:80"
+    networks:
+      - laravel
+
+networks:
+  laravel:
+
+volumes:
+  db_data:
+
+
+
+
+  
+4. สร้างไฟล์ nginx/default.conf
+สร้างโฟลเดอร์ nginx และไฟล์ default.conf:
+
+mkdir nginx
+nano nginx/default.conf
+เพิ่มโค้ด:
+
+nginx
+คัดลอก
+แก้ไข
+server {
+    listen 80;
+    index index.php index.html;
+    root /var/www/public;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass app:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+กด CTRL + X → Y → Enter เพื่อบันทึก
+
+
+
+
+5. อัปเดต .env
+แก้ไขไฟล์ .env ของ Laravel ให้เชื่อมต่อ MySQL ที่เรากำหนด:
+
+
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD=secret
+
+
+
+
+6. สร้างและรัน Docker Containers
+
+docker compose up -d
+🔹 -d = รันเป็น background (detached mode)
+
+ตรวจสอบว่า Container ทำงานได้:
+docker ps
+
+
+
+
+
+
+
+
+7. ตั้งค่า Permission
+ตั้งค่าการเขียนไฟล์ของ Laravel:
+
+docker exec -it laravel_app chmod -R 777 /var/www/storage /var/www/bootstrap/cache
+
+
+
+
+
+8. ตั้งค่า Laravel Key
+
+docker exec -it laravel_app php artisan key:generate
+
+
+
+
+9. เปิดใช้งาน Laravel
+Laravel: http://localhost:8000
+phpMyAdmin: http://localhost:8080 (User: root, Pass: root)
+
+10. คำสั่งที่ใช้บ่อย
+🔹 ดู log
+
+docker compose logs -f
+🔹 เข้าไปใน Container
+
+
+docker exec -it laravel_app bash
+🔹 รัน migration
+
+
+docker exec -it laravel_app php artisan migrate
+🔹 หยุดและลบ Container
+        
+docker compose down
+✅ เสร็จแล้ว! 🎉 Laravel พร้อมใช้งานบน Docker 🚀
+
+ต้องการปรับแต่งอะไรเพิ่มไหม? 😊
